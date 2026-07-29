@@ -98,11 +98,9 @@
             const html = new TextDecoder("utf-8", { fatal: true }).decode(decrypted);
             if (!html.startsWith("<!doctype html>")) throw new Error("verify");
             const blobUrl = URL.createObjectURL(new Blob([html], { type: "text/html" }));
-            frame.addEventListener("load", () => {
-              loader.hidden = true;
-              frame.style.display = "block";
-            }, { once: true });
             frame.src = blobUrl;
+            loader.hidden = true;
+            frame.style.display = "block";
           } catch (error) {
             showError(error instanceof DOMException ? "invalid" : "failed");
           }
