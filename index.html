@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'unsafe-inline' blob:; style-src 'unsafe-inline' blob:; connect-src 'self'; img-src data: blob:; font-src data:; frame-src blob:; child-src blob:; base-uri 'none'; form-action 'none'"
+    />
+    <title>A Little Universe</title>
+    <style>
+      :root{color-scheme:dark;--ink:#17101d;--cream:#fff7f2;--muted:#c9bccb;--rose:#ff6f91;--peach:#ffb29e;--lavender:#c9baff}
+      *{box-sizing:border-box}
+      html,body{width:100%;min-width:320px;min-height:100%;margin:0;background:var(--ink)}
+      body{color:var(--cream);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+      .shell{position:relative;display:grid;min-height:100svh;place-items:center;overflow:hidden;padding:1.5rem;background:radial-gradient(circle at 20% 15%,rgb(255 111 145/.14),transparent 27rem),radial-gradient(circle at 82% 78%,rgb(201 186 255/.1),transparent 29rem),var(--ink)}
+      .card{position:relative;z-index:2;width:min(100%,620px);padding:clamp(2rem,6vw,4.5rem);text-align:center;border:1px solid rgb(255 247 242/.14);border-radius:32px;background:linear-gradient(145deg,rgb(255 247 242/.08),rgb(255 247 242/.03));box-shadow:0 35px 100px rgb(0 0 0/.28);backdrop-filter:blur(18px)}
+      .eyebrow{margin:0 0 2rem;color:var(--peach);font-family:"SFMono-Regular",Consolas,monospace;font-size:.67rem;font-weight:700;letter-spacing:.18em}
+      .heart{display:grid;width:92px;height:92px;margin:0 auto 2rem;place-items:center;color:var(--rose);font-size:3.3rem;border:1px solid rgb(255 111 145/.34);border-radius:50%;background:radial-gradient(circle at 40% 35%,rgb(255 255 255/.18),transparent 28%),rgb(255 111 145/.08);box-shadow:0 0 45px rgb(255 111 145/.23)}
+      .opening .heart{animation:heartbeat 1.7s ease-in-out infinite}
+      h1{margin:0;font-family:Georgia,"Times New Roman",serif;font-size:clamp(2.15rem,7vw,4rem);font-weight:400;line-height:1;letter-spacing:-.04em}
+      .message{max-width:480px;margin:1.4rem auto 0;color:var(--muted);font-family:Georgia,"Times New Roman",serif;font-size:1.02rem;line-height:1.7}
+      .dots{display:block;margin-top:1.6rem;color:var(--lavender);font-size:1.2rem;letter-spacing:.35em;animation:shimmer 1.5s ease-in-out infinite}
+      .star{position:absolute;width:4px;height:4px;border-radius:50%;background:var(--cream);box-shadow:0 0 12px rgb(255 247 242/.7);animation:twinkle 3.8s ease-in-out infinite}
+      .s1{top:15%;left:12%}.s2{top:27%;right:14%;animation-delay:.8s}.s3{right:23%;bottom:15%;animation-delay:1.5s}
+      iframe{position:fixed;z-index:10;display:none;width:100%;height:100%;border:0;inset:0;background:var(--ink)}
+      @keyframes heartbeat{0%,100%{transform:scale(1)}12%{transform:scale(1.08)}24%{transform:scale(1)}36%{transform:scale(1.04)}}
+      @keyframes shimmer{0%,100%{opacity:.35}50%{opacity:1}}
+      @keyframes twinkle{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
+      @media(max-width:520px){.shell{padding:1rem}.card{border-radius:24px}}
+      @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important}}
+    </style>
+  </head>
+  <body>
+    <main class="shell opening" id="loader">
+      <i class="star s1" aria-hidden="true"></i><i class="star s2" aria-hidden="true"></i><i class="star s3" aria-hidden="true"></i>
+      <section class="card" aria-live="polite">
+        <p class="eyebrow">PRIVATE LITTLE UNIVERSE</p>
+        <div class="heart" aria-hidden="true">♥</div>
+        <h1 id="title">Opening your little universe…</h1>
+        <p class="message" id="message">Unfolding every memory with care.</p>
+        <span class="dots" id="dots" aria-label="Opening">•••</span>
+      </section>
+    </main>
+    <iframe id="universe" title="A private little universe" sandbox="allow-scripts allow-forms allow-modals" allow="autoplay; clipboard-write"></iframe>
+    <script>
+      (() => {
+        const title = document.getElementById("title");
+        const message = document.getElementById("message");
+        const dots = document.getElementById("dots");
+        const loader = document.getElementById("loader");
+        const frame = document.getElementById("universe");
+
+        function stopOpening() {
+          loader.classList.remove("opening");
+          dots.hidden = true;
+        }
+
+        function showError(kind) {
+          stopOpening();
+          if (kind === "missing") {
+            title.textContent = "This link is missing its secret.";
+            message.textContent = "Please open the complete link you were sent—it should include everything after the # symbol.";
+          } else if (kind === "invalid") {
+            title.textContent = "This private link is incomplete.";
+            message.textContent = "Please ask for the complete link again and open it without changing any part of it.";
+          } else {
+            title.textContent = "This little universe could not open.";
+            message.textContent = "Check your connection, then refresh the page and try once more.";
+          }
+        }
+
+        function decodeKey(value) {
+          if (!/^[A-Za-z0-9_-]{43}$/.test(value)) return null;
+          try {
+            const standard = value.replace(/-/g, "+").replace(/_/g, "/");
+            const padded = standard + "=".repeat((4 - standard.length % 4) % 4);
+            const bytes = Uint8Array.from(atob(padded), character => character.charCodeAt(0));
+            return bytes.length === 32 ? bytes : null;
+          } catch { return null; }
+        }
+
+        async function openUniverse() {
+          const match = location.hash.match(/^#k=([A-Za-z0-9_-]+)$/);
+          if (!match) return showError("missing");
+          const rawKey = decodeKey(match[1]);
+          if (!rawKey) return showError("invalid");
+
+          try {
+            const response = await fetch("./payload.enc", { cache: "no-store" });
+            if (!response.ok) throw new Error("fetch");
+            const payload = new Uint8Array(await response.arrayBuffer());
+            if (payload.length < 30 || payload[0] !== 1) throw new Error("format");
+            const cryptoKey = await crypto.subtle.importKey("raw", rawKey, { name: "AES-GCM" }, false, ["decrypt"]);
+            const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv: payload.slice(1, 13) }, cryptoKey, payload.slice(13));
+            const html = new TextDecoder("utf-8", { fatal: true }).decode(decrypted);
+            if (!html.startsWith("<!doctype html>")) throw new Error("verify");
+            const blobUrl = URL.createObjectURL(new Blob([html], { type: "text/html" }));
+            frame.addEventListener("load", () => {
+              loader.hidden = true;
+              frame.style.display = "block";
+            }, { once: true });
+            frame.src = blobUrl;
+          } catch (error) {
+            showError(error instanceof DOMException ? "invalid" : "failed");
+          }
+        }
+
+        void openUniverse();
+      })();
+    </script>
+  </body>
+</html>
