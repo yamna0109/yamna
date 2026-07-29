@@ -97,8 +97,7 @@
             const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv: payload.slice(1, 13) }, cryptoKey, payload.slice(13));
             const html = new TextDecoder("utf-8", { fatal: true }).decode(decrypted);
             if (!html.startsWith("<!doctype html>")) throw new Error("verify");
-            const blobUrl = URL.createObjectURL(new Blob([html], { type: "text/html" }));
-            frame.src = blobUrl;
+            frame.srcdoc = html;
             loader.hidden = true;
             frame.style.display = "block";
           } catch (error) {
